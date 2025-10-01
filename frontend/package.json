@@ -1,0 +1,19 @@
+{
+  "name": "uei-frontend",
+  "version": "1.0.0",
+  "description": "Unified Education Interface Frontend",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["education", "uei", "react"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.3"
+  }
+}
