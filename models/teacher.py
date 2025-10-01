@@ -48,7 +48,7 @@ class Teacher(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    apar_records = db.relationship('APARRecord', backref='teacher', cascade='all, delete-orphan')
+    apar_records = db.relationship('APARRecord', foreign_keys='APARRecord.teacher_id', backref='teacher', cascade='all, delete-orphan')
     contributions = db.relationship('AcademicContribution', backref='teacher', cascade='all, delete-orphan')
     
     def to_dict(self):
