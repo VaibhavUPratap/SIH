@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Student Dashboard</h2>
+<p>Welcome, {{ session.get('name') }}!</p>
+<ul>
+    <li>Academic Progress</li>
+    <li>Government Scheme Eligibility</li>
+    <li>Project Submissions</li>
+</ul>
+{% endblock %}

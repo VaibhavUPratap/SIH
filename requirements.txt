@@ -1,0 +1,12 @@
+Flask
+Flask-JWT-Extended
+Flask-SQLAlchemy
+Flask-Migrate
+Werkzeug
+bcrypt
+pandas
+numpy
+scikit-learn
+plotly
+reportlab
+openpyxl

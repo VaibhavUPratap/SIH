@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UEI - Unified Education Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <h2>Unified Education Interface</h2>
+        <ul>
+            {% if session.get('role') %}
+            <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% else %}
+            <li><a href="{{ url_for('auth.login_page') }}">Login</a></li>
+            <li><a href="{{ url_for('auth.register_page') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
