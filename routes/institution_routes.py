@@ -4,14 +4,13 @@ from models.institution import Institution
 from models.student import Student
 from models.teacher import Teacher
 from utils.helpers import role_required, json_to_text, text_to_json
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 institution_bp = Blueprint('institution', __name__)
 
 @institution_bp.route('/dashboard', methods=['GET'])
-@jwt_required()
-@role_required(['institution'])
 def dashboard():
+    # Template route - authentication handled by JavaScript
     return render_template('dashboard_institution.html')
 
 @institution_bp.route('/upload_data', methods=['POST'])
@@ -21,7 +20,9 @@ def upload_data():
     try:
         data = request.get_json()
         
-        institution = current_user.institution_profile
+        current_user_id = get_jwt_identity()
+        current_user_obj = User.query.get(current_user_id)
+        institution = current_user_obj.institution_profile
         if not institution:
             return jsonify({'error': 'Institution profile not found'}), 404
         
@@ -51,7 +52,9 @@ def get_analytics():
         total_students = Student.query.count()
         total_teachers = Teacher.query.count()
         
-        institution = current_user.institution_profile
+        current_user_id = get_jwt_identity()
+        current_user_obj = User.query.get(current_user_id)
+        institution = current_user_obj.institution_profile
         
         analytics_data = {
             'total_students': total_students,

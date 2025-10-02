@@ -2,14 +2,13 @@ from flask import Blueprint, request, jsonify, render_template
 from models.user import User, db
 from models.student import Student
 from utils.helpers import role_required, json_to_text, text_to_json
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 student_bp = Blueprint('student', __name__)
 
 @student_bp.route('/dashboard', methods=['GET'])
-@jwt_required()
-@role_required(['student'])
 def dashboard():
+    # Template route - authentication handled by JavaScript
     return render_template('dashboard_student.html')
 
 @student_bp.route('/upload_project', methods=['POST'])
@@ -19,7 +18,9 @@ def upload_project():
     try:
         data = request.get_json()
         
-        student = current_user.student_profile
+        current_user_id = get_jwt_identity()
+        current_user_obj = User.query.get(current_user_id)
+        student = current_user_obj.student_profile
         if not student:
             return jsonify({'error': 'Student profile not found'}), 404
         
@@ -46,7 +47,9 @@ def upload_project():
 @role_required(['student'])
 def get_performance():
     try:
-        student = current_user.student_profile
+        current_user_id = get_jwt_identity()
+        current_user_obj = User.query.get(current_user_id)
+        student = current_user_obj.student_profile
         
         if not student:
             return jsonify({'error': 'Student profile not found'}), 404

@@ -3,14 +3,13 @@ from models.user import User, db
 from models.teacher import Teacher
 from models.student import Student
 from utils.helpers import role_required, json_to_text, text_to_json
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 teacher_bp = Blueprint('teacher', __name__)
 
 @teacher_bp.route('/dashboard', methods=['GET'])
-@jwt_required()
-@role_required(['teacher'])
 def dashboard():
+    # Template route - authentication handled by JavaScript
     return render_template('dashboard_teacher.html')
 
 @teacher_bp.route('/evaluate_student', methods=['POST'])
@@ -26,7 +25,9 @@ def evaluate_student():
         if not student:
             return jsonify({'error': 'Student not found'}), 404
         
-        teacher = current_user.teacher_profile
+        current_user_id = get_jwt_identity()
+        current_user_obj = User.query.get(current_user_id)
+        teacher = current_user_obj.teacher_profile
         evaluations = text_to_json(teacher.evaluations) or []
         
         evaluations.append({
@@ -56,7 +57,9 @@ def evaluate_student():
 @role_required(['teacher'])
 def get_performance():
     try:
-        teacher = current_user.teacher_profile
+        current_user_id = get_jwt_identity()
+        current_user_obj = User.query.get(current_user_id)
+        teacher = current_user_obj.teacher_profile
         
         if not teacher:
             return jsonify({'error': 'Teacher profile not found'}), 404

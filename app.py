@@ -17,12 +17,7 @@ def create_app(config_name='default'):
     jwt = JWTManager(app)
     migrate = Migrate(app, db)
     
-    # JWT configuration - FIXED VERSION
-    @jwt.user_identity_loader
-    def user_identity_lookup(user):
-        # This should return a simple identity (user ID)
-        return user.id
-
+    # JWT configuration - simplified
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
         # This gets the user object from the identity
@@ -50,6 +45,10 @@ def create_app(config_name='default'):
     @app.route('/login')
     def login_page():
         return render_template('login.html')
+    
+    @app.route('/test')
+    def test_page():
+        return render_template('test.html')
     
     # Error handlers
     @app.errorhandler(404)

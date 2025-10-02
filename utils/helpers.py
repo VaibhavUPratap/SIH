@@ -17,7 +17,14 @@ def role_required(roles):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 return f(*args, **kwargs)
             except Exception as e:
-                return jsonify({'error': 'Invalid token'}), 401
+                # More specific error messages
+                error_msg = str(e)
+                if 'Missing Authorization Header' in error_msg:
+                    return jsonify({'msg': 'Missing Authorization Header'}), 401
+                elif 'token' in error_msg.lower():
+                    return jsonify({'error': 'Invalid or expired token'}), 401
+                else:
+                    return jsonify({'error': f'Authentication error: {error_msg}'}), 401
         return decorated_function
     return decorator
 

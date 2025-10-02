@@ -26,10 +26,12 @@ def test_routes():
     # Test registration endpoint
     try:
         test_user = {
-            "username": "testuser",
+            "name": "Test User",
             "email": "test@example.com",
             "password": "testpass123",
-            "role": "student"
+            "role": "student",
+            "aadhaar_id": "123456789012",
+            "enrollment_no": "ST2025001"
         }
         
         response = requests.post(
@@ -56,7 +58,7 @@ def test_routes():
     # Test login endpoint
     try:
         login_data = {
-            "username": "testuser",
+            "email": "test@example.com",
             "password": "testpass123"
         }
         

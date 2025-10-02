@@ -9,9 +9,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/dashboard', methods=['GET'])
-@jwt_required()
-@role_required(['admin'])
 def dashboard():
+    # Template route - authentication handled by JavaScript
     return render_template('dashboard_admin.html')
 
 @admin_bp.route('/manage_users', methods=['POST'])
@@ -48,26 +47,36 @@ def manage_users():
 @role_required(['admin'])
 def get_reports():
     try:
-        # Generate comprehensive analytics
-        total_users = User.query.count()
-        total_students = Student.query.count()
-        total_teachers = Teacher.query.count()
-        total_institutions = Institution.query.count()
+        from services.report_service import ReportService
+        from services.analytics_service import AnalyticsService
+        
+        # Get comprehensive system analytics
+        system_overview = AnalyticsService.get_system_overview()
+        student_trends = AnalyticsService.get_student_performance_trends()
+        institution_rankings = AnalyticsService.get_institution_rankings()
+        teacher_stats = AnalyticsService.get_teacher_evaluation_stats()
         
         reports_data = {
-            'total_users': total_users,
-            'total_students': total_students,
-            'total_teachers': total_teachers,
-            'total_institutions': total_institutions,
-            'users_by_role': {
-                'student': User.query.filter_by(role='student').count(),
-                'teacher': User.query.filter_by(role='teacher').count(),
-                'institution': User.query.filter_by(role='institution').count(),
-                'admin': User.query.filter_by(role='admin').count()
-            }
+            **system_overview,
+            'student_performance_trends': student_trends,
+            'institution_rankings': institution_rankings,
+            'teacher_evaluation_stats': teacher_stats
         }
         
         return jsonify(reports_data), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/analytics', methods=['GET'])
+@jwt_required()
+@role_required(['admin'])
+def get_analytics():
+    try:
+        from services.report_service import ReportService
+        
+        report = ReportService.generate_admin_report()
+        return jsonify(report), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

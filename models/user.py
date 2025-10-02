@@ -30,8 +30,8 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
     
     def generate_token(self):
-        # FIXED: Pass the user ID as identity, not the whole user object
-        return create_access_token(identity=self.id)
+        # Pass the user ID directly as identity
+        return create_access_token(identity=str(self.id))
     
     def to_dict(self):
         return {

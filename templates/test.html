@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test - UEI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Authentication Test Page</h1>
+        
+        <div class="space-y-4">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-2">Token Status</h2>
+                <p id="tokenStatus" class="text-gray-600">Checking...</p>
+                <button onclick="checkToken()" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">Refresh Token Status</button>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-2">Quick Login</h2>
+                <div class="space-y-2">
+                    <input type="email" id="email" placeholder="Email" value="api@example.com" class="w-full p-2 border rounded">
+                    <input type="password" id="password" placeholder="Password" value="testpass123" class="w-full p-2 border rounded">
+                    <button onclick="quickLogin()" class="bg-green-500 text-white px-4 py-2 rounded">Login</button>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-2">Test API Calls</h2>
+                <div class="space-y-2">
+                    <button onclick="testProfile()" class="bg-purple-500 text-white px-4 py-2 rounded">Test Profile</button>
+                    <button onclick="testStudentPerformance()" class="bg-orange-500 text-white px-4 py-2 rounded">Test Student Performance</button>
+                </div>
+                <div id="apiResults" class="mt-4 p-3 bg-gray-100 rounded text-sm"></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-2">Dashboard Links</h2>
+                <div class="space-y-2">
+                    <a href="/student/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded inline-block">Student Dashboard</a>
+                    <a href="/teacher/dashboard" class="bg-green-600 text-white px-4 py-2 rounded inline-block">Teacher Dashboard</a>
+                    <a href="/institution/dashboard" class="bg-purple-600 text-white px-4 py-2 rounded inline-block">Institution Dashboard</a>
+                    <a href="/admin/dashboard" class="bg-red-600 text-white px-4 py-2 rounded inline-block">Admin Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkToken() {
+            const token = localStorage.getItem('token');
+            const statusEl = document.getElementById('tokenStatus');
+            
+            if (token) {
+                statusEl.innerHTML = `
+                    <span class="text-green-600">✅ Token found</span><br>
+                    <span class="text-xs text-gray-500">Token: ${token.substring(0, 50)}...</span>
+                `;
+            } else {
+                statusEl.innerHTML = '<span class="text-red-600">❌ No token found in localStorage</span>';
+            }
+        }
+
+        async function quickLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    document.getElementById('apiResults').innerHTML = 
+                        `<span class="text-green-600">✅ Login successful!</span><br>Role: ${data.user.role}`;
+                    checkToken();
+                } else {
+                    document.getElementById('apiResults').innerHTML = 
+                        `<span class="text-red-600">❌ Login failed: ${data.error}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('apiResults').innerHTML = 
+                    `<span class="text-red-600">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('apiResults').innerHTML = 
+                    '<span class="text-red-600">❌ No token found. Please login first.</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/profile', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+                const data = await response.json();
+                
+                document.getElementById('apiResults').innerHTML = 
+                    `<span class="text-blue-600">Profile API Response:</span><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('apiResults').innerHTML = 
+                    `<span class="text-red-600">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testStudentPerformance() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('apiResults').innerHTML = 
+                    '<span class="text-red-600">❌ No token found. Please login first.</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/student/performance', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+                const data = await response.json();
+                
+                document.getElementById('apiResults').innerHTML = 
+                    `<span class="text-blue-600">Student Performance API Response:</span><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('apiResults').innerHTML = 
+                    `<span class="text-red-600">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        // Check token status on page load
+        document.addEventListener('DOMContentLoaded', checkToken);
+    </script>
+</body>
+</html>
