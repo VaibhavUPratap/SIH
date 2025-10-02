@@ -1,8 +1,22 @@
-from utils.db import db
+from .user import db
 
 class Teacher(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    __tablename__ = 'teachers'
+    
+    id = db.Column(db.String(36), primary_key=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     apar_id = db.Column(db.String(50), unique=True, nullable=False)
-    aadhaar_hash = db.Column(db.String(200), unique=True, nullable=False)
-    publications = db.Column(db.JSON)
+    subject = db.Column(db.String(100))
+    evaluations = db.Column(db.Text)  # JSON string of evaluations
+    department = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'apar_id': self.apar_id,
+            'subject': self.subject,
+            'evaluations': self.evaluations,
+            'department': self.department
+        }

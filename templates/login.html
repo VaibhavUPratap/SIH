@@ -1,18 +1,95 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Login</h2>
-<form method="POST" action="{{ url_for('auth.login') }}">
-    <label>Email:</label>
-    <input type="email" name="email" required>
-    <label>Password:</label>
-    <input type="password" name="password" required>
-    <label>Role:</label>
-    <select name="role">
-        <option value="student">Student</option>
-        <option value="teacher">Teacher</option>
-        <option value="institution">Institution</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Login</button>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Unified Education Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-blue-600">Unified Education Interface</h2>
+            <p class="mt-2 text-gray-600">Sign in to your account</p>
+        </div>
+        
+        <form class="mt-8 space-y-6" onsubmit="login(event)">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email" required 
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" required 
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <button type="submit" 
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Sign In
+            </button>
+        </form>
+        
+        <div class="text-center">
+            <p class="text-sm text-gray-600">
+                Don't have an account? 
+                <a href="#" onclick="showRegister()" class="font-medium text-blue-600 hover:text-blue-500">Register here</a>
+            </p>
+        </div>
+        
+        <!-- Registration Form (Hidden by default) -->
+        <div id="registerForm" class="hidden mt-8 space-y-4">
+            <h3 class="text-xl font-bold text-center">Register New Account</h3>
+            
+            <select id="role" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="institution">Institution</option>
+                <option value="admin">Admin</option>
+            </select>
+            
+            <input type="text" id="reg_name" placeholder="Full Name" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            <input type="email" id="reg_email" placeholder="Email Address" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            <input type="password" id="reg_password" placeholder="Password" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            
+            <!-- Role-specific fields -->
+            <div id="studentFields">
+                <input type="text" id="enrollment_no" placeholder="Enrollment Number" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            </div>
+            
+            <div id="teacherFields" class="hidden">
+                <input type="text" id="apar_id" placeholder="APAR ID" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <input type="text" id="subject" placeholder="Subject" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            </div>
+            
+            <div id="institutionFields" class="hidden">
+                <input type="text" id="aishe_code" placeholder="AISHE Code" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <input type="text" id="institution_name" placeholder="Institution Name" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            </div>
+            
+            <button onclick="register()" 
+                    class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+                Register
+            </button>
+            <button type="button" onclick="hideRegister()" 
+                    class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">
+                Cancel
+            </button>
+        </div>
+        
+        <div id="message" class="hidden mt-4 p-3 rounded-md"></div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

@@ -1,8 +1,36 @@
-body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-nav { background: #0ea5a6; color: white; padding: 10px; display: flex; justify-content: space-between; }
-nav ul { list-style: none; display: flex; gap: 10px; }
-nav ul li a { color: white; text-decoration: none; }
-.container { padding: 20px; }
-form label { display: block; margin-top: 10px; }
-form input, form select { padding: 5px; width: 100%; max-width: 400px; margin-top: 5px; }
-button { margin-top: 10px; padding: 10px 20px; background: #0ea5a6; color: white; border: none; cursor: pointer; }
+/* Custom styles for Unified Education Interface */
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.progress-bar {
+    transition: width 0.5s ease-in-out;
+}
+
+.card-hover {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

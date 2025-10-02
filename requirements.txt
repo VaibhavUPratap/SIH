@@ -1,12 +1,8 @@
 Flask
-Flask-JWT-Extended
 Flask-SQLAlchemy
 Flask-Migrate
+Flask-JWT-Extended
 Werkzeug
-bcrypt
-pandas
-numpy
-scikit-learn
-plotly
-reportlab
-openpyxl
+python-dotenv
+psycopg2-binary
+PyJWT

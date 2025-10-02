@@ -1,1 +1,195 @@
+{% extends "base.html" %}
 
+{% block title %}Institution Dashboard - Unified Education Interface{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Institution Info -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold text-blue-600 mb-4">Institution Profile</h2>
+            <div id="institutionInfo">
+                <p>Loading...</p>
+            </div>
+        </div>
+
+        <!-- NIRF Ranking -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold text-green-600 mb-4">NIRF Ranking</h2>
+            <div id="nirfInfo">
+                <p>Loading...</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold text-purple-600 mb-4">Quick Actions</h2>
+            <div class="space-y-3">
+                <button onclick="showDataUpload()" 
+                        class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                    Upload Data
+                </button>
+                <button onclick="loadAnalytics()" 
+                        class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                    View Analytics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Institution Analytics</h2>
+        <div id="analyticsData">
+            <!-- Analytics will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Data Upload Modal -->
+<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg w-96">
+        <h3 class="text-lg font-bold mb-4">Upload Institution Data</h3>
+        <form onsubmit="uploadData(event)" class="space-y-3">
+            <input type="number" id="nirfRank" placeholder="NIRF Rank" 
+                   class="w-full px-3 py-2 border rounded">
+            <textarea id="schemesData" placeholder="Schemes (JSON format)" 
+                      class="w-full px-3 py-2 border rounded"></textarea>
+            <div class="flex space-x-3">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Upload
+                </button>
+                <button type="button" onclick="hideDataUpload()" 
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let token = localStorage.getItem('token');
+    
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadInstitutionData();
+        loadAnalytics();
+    });
+
+    async function loadInstitutionData() {
+        try {
+            const [profileResponse, analyticsResponse] = await Promise.all([
+                fetch('/auth/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch('/institution/analytics', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+
+            const profileData = await profileResponse.json();
+            const analyticsData = await analyticsResponse.json();
+
+            if (profileResponse.ok) {
+                document.getElementById('institutionInfo').innerHTML = `
+                    <p><strong>Name:</strong> ${profileData.institution_name}</p>
+                    <p><strong>AISHE Code:</strong> ${profileData.aishe_code}</p>
+                    <p><strong>Address:</strong> ${profileData.address}</p>
+                    <p><strong>Established:</strong> ${profileData.established_year}</p>
+                `;
+            }
+
+            if (analyticsResponse.ok) {
+                document.getElementById('nirfInfo').innerHTML = `
+                    <p><strong>Current Rank:</strong> ${analyticsData.nirf_rank || 'Not set'}</p>
+                    <p><strong>Total Students:</strong> ${analyticsData.total_students}</p>
+                    <p><strong>Total Teachers:</strong> ${analyticsData.total_teachers}</p>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading institution data:', error);
+        }
+    }
+
+    function showDataUpload() {
+        document.getElementById('uploadModal').classList.remove('hidden');
+    }
+
+    function hideDataUpload() {
+        document.getElementById('uploadModal').classList.add('hidden');
+    }
+
+    async function uploadData(event) {
+        event.preventDefault();
+        
+        const uploadData = {
+            nirf_rank: document.getElementById('nirfRank').value,
+            schemes: JSON.parse(document.getElementById('schemesData').value || '[]')
+        };
+
+        try {
+            const response = await fetch('/institution/upload_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(uploadData)
+            });
+
+            if (response.ok) {
+                alert('Data uploaded successfully!');
+                hideDataUpload();
+                loadInstitutionData();
+            } else {
+                alert('Error uploading data');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function loadAnalytics() {
+        try {
+            const response = await fetch('/institution/analytics', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                document.getElementById('analyticsData').innerHTML = `
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-blue-100 p-4 rounded">
+                            <p class="font-bold">Total Students</p>
+                            <p class="text-2xl">${data.total_students}</p>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded">
+                            <p class="font-bold">Total Teachers</p>
+                            <p class="text-2xl">${data.total_teachers}</p>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded">
+                            <p class="font-bold">NIRF Rank</p>
+                            <p class="text-2xl">${data.nirf_rank || 'N/A'}</p>
+                        </div>
+                        <div class="bg-orange-100 p-4 rounded">
+                            <p class="font-bold">Schemes</p>
+                            <p class="text-2xl">${data.schemes ? data.schemes.length : 0}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading analytics:', error);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
+</script>
+{% endblock %}

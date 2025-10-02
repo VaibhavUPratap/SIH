@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Unified Education Interface{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-blue-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold">Total Users</h3>
+            <p id="totalUsers" class="text-3xl font-bold">0</p>
+        </div>
+        <div class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold">Students</h3>
+            <p id="totalStudents" class="text-3xl font-bold">0</p>
+        </div>
+        <div class="bg-purple-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold">Teachers</h3>
+            <p id="totalTeachers" class="text-3xl font-bold">0</p>
+        </div>
+        <div class="bg-orange-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold">Institutions</h3>
+            <p id="totalInstitutions" class="text-3xl font-bold">0</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- User Management -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">User Management</h2>
+            <div class="space-y-4">
+                <input type="text" id="searchUser" placeholder="Search users..." 
+                       class="w-full px-3 py-2 border rounded">
+                <div id="usersList" class="max-h-96 overflow-y-auto">
+                    <!-- Users will be listed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">System Reports</h2>
+            <div class="space-y-3">
+                <button onclick="generateReports()" 
+                        class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                    Generate Analytics Report
+                </button>
+                <button onclick="exportData()" 
+                        class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                    Export Data
+                </button>
+            </div>
+            <div id="reportsOutput" class="mt-4 p-4 bg-gray-50 rounded hidden">
+                <!-- Reports will be displayed here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let token = localStorage.getItem('token');
+    
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardData();
+        loadUsers();
+    });
+
+    async function loadDashboardData() {
+        try {
+            const response = await fetch('/admin/reports', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                document.getElementById('totalUsers').textContent = data.total_users;
+                document.getElementById('totalStudents').textContent = data.total_students;
+                document.getElementById('totalTeachers').textContent = data.total_teachers;
+                document.getElementById('totalInstitutions').textContent = data.total_institutions;
+            }
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    }
+
+    async function loadUsers() {
+        // In a real implementation, you'd have an endpoint to fetch all users
+        // For now, we'll use the reports data
+        try {
+            const response = await fetch('/admin/reports', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                const usersList = document.getElementById('usersList');
+                // This is a simplified representation
+                usersList.innerHTML = `
+                    <div class="text-gray-600">
+                        <p>Total Users: ${data.total_users}</p>
+                        <p>Students: ${data.users_by_role.student}</p>
+                        <p>Teachers: ${data.users_by_role.teacher}</p>
+                        <p>Institutions: ${data.users_by_role.institution}</p>
+                        <p>Admins: ${data.users_by_role.admin}</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+        }
+    }
+
+    async function generateReports() {
+        try {
+            const response = await fetch('/admin/reports', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                const reportsOutput = document.getElementById('reportsOutput');
+                reportsOutput.classList.remove('hidden');
+                reportsOutput.innerHTML = `
+                    <h4 class="font-bold mb-2">System Analytics Report</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            }
+        } catch (error) {
+            console.error('Error generating reports:', error);
+        }
+    }
+
+    function exportData() {
+        alert('Data export feature coming soon!');
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
+</script>
+{% endblock %}
