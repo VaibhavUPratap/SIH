@@ -35,27 +35,9 @@
         <div class="text-center">
             <p class="text-sm text-gray-600">
                 Don't have an account? 
-                <a href="#" onclick="showRegister()" class="font-medium text-blue-600 hover:text-blue-500">Register here</a>
+                <a href="register.html" class="font-medium text-blue-600 hover:text-blue-500">Register here</a>
             </p>
         </div>
-        
-        <!-- Registration Form (Hidden by default) -->
-        <div id="registerForm" class="hidden mt-8 space-y-4">
-            <h3 class="text-xl font-bold text-center">Register New Account</h3>
-            
-            <select id="role" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
-                <option value="institution">Institution</option>
-                <option value="admin">Admin</option>
-            </select>
-            
-            <input type="text" id="reg_name" placeholder="Full Name" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            <input type="email" id="reg_email" placeholder="Email Address" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            <input type="password" id="reg_password" placeholder="Password" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
             
             <!-- Role-specific fields -->
             <div id="studentFields">
