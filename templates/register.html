@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div id="registerForm">
+        <h3>Register New Account</h3>
+        
+        <select id="role">
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+            <option value="institution">Institution</option>
+            <option value="admin">Admin</option>
+        </select>
+        
+        <input type="text" id="reg_name" placeholder="Full Name">
+        <input type="email" id="reg_email" placeholder="Email Address">
+        <input type="password" id="reg_password" placeholder="Password">
+        <button type="button" id="regis-btn">Register</button>
+        <button type="button" id="cncl-btn">Cancel</button>
+    </div>
+</body>
+</html>
