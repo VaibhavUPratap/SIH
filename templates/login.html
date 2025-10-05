@@ -5,71 +5,234 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Unified Education Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center">
-    <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg">
-        <div class="text-center">
-            <h2 class="text-3xl font-bold text-blue-600">Unified Education Interface</h2>
-            <p class="mt-2 text-gray-600">Sign in to your account</p>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-4xl w-full flex bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <!-- Left Panel - Login -->
+        <div class="w-full md:w-1/2 p-8" id="loginPanel">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center mb-4">
+                    <i class="fas fa-graduation-cap text-4xl text-blue-600 mr-3"></i>
+                    <h1 class="text-3xl font-bold text-gray-800">UEI</h1>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
+                <p class="text-gray-600 mt-2">Sign in to your account</p>
+            </div>
+            
+            <form class="space-y-6" onsubmit="login(event)">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-2"></i>Email Address
+                    </label>
+                    <input type="email" id="email" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                           placeholder="Enter your email">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="password" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 pr-12"
+                               placeholder="Enter your password">
+                        <button type="button" onclick="togglePassword('password')" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-eye" id="password-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="#" class="text-sm text-blue-600 hover:text-blue-500">Forgot password?</a>
+                </div>
+                
+                <button type="submit" id="loginBtn"
+                        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 shadow-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                </button>
+            </form>
+            
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600">
+                    Don't have an account? 
+                    <button onclick="showRegister()" class="font-medium text-blue-600 hover:text-blue-500">Register here</button>
+                </p>
+            </div>
         </div>
         
-        <form class="mt-8 space-y-6" onsubmit="login(event)">
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" id="email" required 
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <!-- Right Panel - Register -->
+        <div class="w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white hidden md:flex flex-col justify-center" id="registerPanel">
+            <div class="text-center">
+                <i class="fas fa-users text-6xl mb-6 opacity-80"></i>
+                <h3 class="text-3xl font-bold mb-4">Join Our Education Network</h3>
+                <p class="text-lg opacity-90 mb-6">Connect students, teachers, and institutions in one unified platform</p>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-3"></i>
+                        <span>Secure Authentication with Aadhaar</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-3"></i>
+                        <span>Government Scheme Management</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-3"></i>
+                        <span>Performance Analytics & Reporting</span>
+                    </div>
+                </div>
             </div>
-            
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="password" required 
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            
-            <button type="submit" 
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Sign In
-            </button>
-        </form>
-        
-        <div class="text-center">
-            <p class="text-sm text-gray-600">
-                Don't have an account? 
-                <a href="register.html" class="font-medium text-blue-600 hover:text-blue-500">Register here</a>
-            </p>
         </div>
-            
-            <!-- Role-specific fields -->
-            <div id="studentFields">
-                <input type="text" id="enrollment_no" placeholder="Enrollment Number" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+    </div>
+    
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800">Create Account</h3>
+                        <p class="text-gray-600">Join the Unified Education Interface</p>
+                    </div>
+                    
+                    <form class="space-y-4" onsubmit="register(event)">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">User Role</label>
+                            <select id="role" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="student">Student</option>
+                                <option value="teacher">Teacher</option>
+                                <option value="institution">Institution</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="reg_name" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter your full name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="reg_email" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter your email">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <div class="relative">
+                                <input type="password" id="reg_password" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
+                                       placeholder="Enter your password">
+                                <button type="button" onclick="togglePassword('reg_password')" 
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-eye" id="reg_password-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Aadhaar Number</label>
+                            <input type="text" id="aadhaar_id" required maxlength="12" pattern="[0-9]{12}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter 12-digit Aadhaar number">
+                        </div>
+                        
+                        <!-- Role-specific fields -->
+                        <div id="studentFields">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Enrollment Number</label>
+                            <input type="text" id="enrollment_no"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter enrollment number">
+                        </div>
+                        
+                        <div id="teacherFields" class="hidden space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">APAR ID</label>
+                                <input type="text" id="apar_id"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter APAR ID">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                <input type="text" id="subject"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter teaching subject">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                                <input type="text" id="department"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter department">
+                            </div>
+                        </div>
+                        
+                        <div id="institutionFields" class="hidden space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">AISHE Code</label>
+                                <input type="text" id="aishe_code"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter AISHE code">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Institution Name</label>
+                                <input type="text" id="institution_name"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter institution name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Institution Type</label>
+                                <select id="institution_type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="University">University</option>
+                                    <option value="College">College</option>
+                                    <option value="School">School</option>
+                                    <option value="Institute">Institute</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-4 mt-6">
+                            <button type="button" onclick="hideRegister()" 
+                                    class="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-600 transition duration-200">
+                                Cancel
+                            </button>
+                            <button type="submit" id="registerBtn"
+                                    class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition duration-200">
+                                Register
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            
-            <div id="teacherFields" class="hidden">
-                <input type="text" id="apar_id" placeholder="APAR ID" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                <input type="text" id="subject" placeholder="Subject" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            </div>
-            
-            <div id="institutionFields" class="hidden">
-                <input type="text" id="aishe_code" placeholder="AISHE Code" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                <input type="text" id="institution_name" placeholder="Institution Name" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            </div>
-            
-            <button onclick="register()" 
-                    class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
-                Register
-            </button>
-            <button type="button" onclick="hideRegister()" 
-                    class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">
-                Cancel
-            </button>
         </div>
-        
-        <div id="message" class="hidden mt-4 p-3 rounded-md"></div>
+    </div>
+    
+    <!-- Message Display -->
+    <div id="message" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-white border-l-4 border-blue-500 rounded-lg shadow-lg p-4 max-w-md">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-500 mr-3"></i>
+                <p id="messageText" class="text-gray-800"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg p-6 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Please wait...</p>
+            </div>
+        </div>
     </div>
     
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>

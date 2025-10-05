@@ -7,6 +7,11 @@ from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 from flask_migrate import Migrate
 from config import config
 from models.user import db, User
+# Import all models to ensure they are registered with SQLAlchemy
+from models.student import Student
+from models.teacher import Teacher
+from models.institution import Institution
+from models.scheme import GovernmentScheme, SchemeApplication
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -30,12 +35,14 @@ def create_app(config_name='default'):
     from routes.teacher_routes import teacher_bp
     from routes.institution_routes import institution_bp
     from routes.admin_routes import admin_bp
+    from routes.scheme_routes import scheme_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(student_bp, url_prefix='/student')
     app.register_blueprint(teacher_bp, url_prefix='/teacher')
     app.register_blueprint(institution_bp, url_prefix='/institution')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(scheme_bp, url_prefix='/schemes')
     
     # Routes
     @app.route('/')
@@ -45,6 +52,11 @@ def create_app(config_name='default'):
     @app.route('/login')
     def login_page():
         return render_template('login.html')
+    
+    @app.route('/register')
+    def register_page():
+        return render_template('login.html')
+
     
     @app.route('/test')
     def test_page():
