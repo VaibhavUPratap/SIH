@@ -1,146 +1,664 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduVerify - Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="dashboard-container">
+        <!-- Enhanced Sidebar -->
+        <nav class="sidebar bg-white shadow-lg">
+            <div class="sidebar-header border-b border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-shield-alt text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">EduVerify</h1>
+                        <p class="text-sm text-gray-600">Admin Panel</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav px-4 py-6">
+                <div class="space-y-2">
+                    <a href="#dashboard" class="nav-item active flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('dashboard')">
+                        <i class="fas fa-home w-5 h-5 mr-3"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <a href="#verification" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('verification')">
+                        <i class="fas fa-user-check w-5 h-5 mr-3"></i>
+                        <span>Verification Panel</span>
+                        <span class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full" id="pendingCount">0</span>
+                    </a>
+                    
+                    <a href="#users" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('users')">
+                        <i class="fas fa-users w-5 h-5 mr-3"></i>
+                        <span>User Management</span>
+                    </a>
+                    
+                    <a href="#registry" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('registry')">
+                        <i class="fas fa-database w-5 h-5 mr-3"></i>
+                        <span>Registry Management</span>
+                    </a>
+                    
+                    <a href="#analytics" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('analytics')">
+                        <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+                        <span>Analytics</span>
+                    </a>
+                    
+                    <a href="#logs" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('logs')">
+                        <i class="fas fa-clipboard-list w-5 h-5 mr-3"></i>
+                        <span>Verification Logs</span>
+                    </a>
+                    
+                    <a href="#reports" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('reports')">
+                        <i class="fas fa-file-alt w-5 h-5 mr-3"></i>
+                        <span>Reports</span>
+                    </a>
+                    
+                    <a href="#settings" class="nav-item flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors" onclick="showSection('settings')">
+                        <i class="fas fa-cog w-5 h-5 mr-3"></i>
+                        <span>Settings</span>
+                    </a>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <a href="#" onclick="logout()" class="flex items-center px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                        <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
 
-{% block title %}Admin Dashboard - Unified Education Interface{% endblock %}
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Enhanced Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+                        <p class="text-gray-600 mt-1">Comprehensive education data verification system</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Quick Actions -->
+                        <button onclick="refreshData()" class="btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Refresh
+                        </button>
+                        
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3 bg-gray-50 rounded-lg px-4 py-2">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold text-sm" id="userAvatar">A</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-gray-900" id="userName">Admin User</p>
+                                <p class="text-xs text-gray-600">Ministry of Education</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Status Bar -->
+                <div class="mt-4 flex items-center space-x-6 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        <span class="text-gray-600">System Online</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                        <span class="text-gray-600">Database Connected</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2" id="verificationStatus"></div>
+                        <span class="text-gray-600" id="verificationStatusText">Verification Services Active</span>
+                    </div>
+                </div>
+            </header>
 
-{% block content %}
-<div class="space-y-6">
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-blue-500 text-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-lg font-semibold">Total Users</h3>
-            <p id="totalUsers" class="text-3xl font-bold">0</p>
-        </div>
-        <div class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-lg font-semibold">Students</h3>
-            <p id="totalStudents" class="text-3xl font-bold">0</p>
-        </div>
-        <div class="bg-purple-500 text-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-lg font-semibold">Teachers</h3>
-            <p id="totalTeachers" class="text-3xl font-bold">0</p>
-        </div>
-        <div class="bg-orange-500 text-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-lg font-semibold">Institutions</h3>
-            <p id="totalInstitutions" class="text-3xl font-bold">0</p>
-        </div>
+            <!-- Dashboard Overview Section -->
+            <section id="dashboard-section" class="content-section">
+                <!-- Enhanced Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Users</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-2" id="totalUsers">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-green-600 text-sm font-medium">+12%</span>
+                            <span class="text-gray-600 text-sm ml-2">from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Verified Users</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-2" id="verifiedUsers">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-green-600 text-sm font-medium">+8%</span>
+                            <span class="text-gray-600 text-sm ml-2">verification rate</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Pending Verifications</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-2" id="pendingVerifications">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-yellow-600 text-sm font-medium">Requires attention</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">System Health</p>
+                                <p class="text-3xl font-bold text-green-600 mt-2">98.5%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-heart text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-green-600 text-sm font-medium">All systems operational</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Verification Trends Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Verification Trends</h3>
+                            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1" onchange="updateTrendChart(this.value)">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                            </select>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="verificationTrendsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- User Distribution Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">User Distribution</h3>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="userDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-user-plus text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Bulk User Verification</h3>
+                            <p class="text-gray-600 text-sm mb-4">Process multiple user verifications at once</p>
+                            <button class="btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg w-full transition-colors" onclick="showBulkVerification()">
+                                Start Bulk Process
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-database text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Registry Management</h3>
+                            <p class="text-gray-600 text-sm mb-4">Manage APAR and AISHE registries</p>
+                            <button class="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full transition-colors" onclick="showSection('registry')">
+                                Manage Registry
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-file-export text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Export Reports</h3>
+                            <p class="text-gray-600 text-sm mb-4">Generate comprehensive system reports</p>
+                            <button class="btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg w-full transition-colors" onclick="showSection('reports')">
+                                Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Activities</h3>
+                            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium" onclick="loadRecentActivities()">
+                                <i class="fas fa-refresh mr-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4" id="recentActivitiesList">
+                            <!-- Dynamic content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Verification Panel Section -->
+            <section id="verification-section" class="content-section hidden">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-900">User Verification Panel</h3>
+                        <div class="flex space-x-3">
+                            <select class="border border-gray-300 rounded-lg px-3 py-2" id="verificationFilter" onchange="filterVerifications(this.value)">
+                                <option value="all">All Verifications</option>
+                                <option value="pending">Pending</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="manual">Requires Manual Review</option>
+                            </select>
+                            <button class="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg" onclick="approveSelected()">
+                                <i class="fas fa-check mr-2"></i>Approve Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Verification Queue -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-semibold text-gray-900">Verification Queue</h4>
+                            <span class="text-sm text-gray-600" id="queueCount">0 items pending</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" class="rounded" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verification Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confidence</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="verificationQueue">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other sections will be implemented similarly... -->
+            <!-- For now, let's add placeholders -->
+            
+            <section id="users-section" class="content-section hidden">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-900">User Management</h3>
+                        <div class="flex space-x-3">
+                            <select class="border border-gray-300 rounded-lg px-3 py-2" id="userRoleFilter" onchange="filterUsers(this.value)">
+                                <option value="all">All Roles</option>
+                                <option value="student">Students</option>
+                                <option value="teacher">Teachers</option>
+                                <option value="institution">Institutions</option>
+                                <option value="admin">Administrators</option>
+                            </select>
+                            <button class="btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg" onclick="showAddUserModal()">
+                                <i class="fas fa-plus mr-2"></i>Add User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search and Filters -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <input type="text" id="userSearchInput" placeholder="Search by name, email, or ID..." 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   oninput="searchUsers(this.value)">
+                        </div>
+                        <div class="flex gap-2">
+                            <select class="border border-gray-300 rounded-lg px-3 py-2" id="userStatusFilter" onchange="filterUsersByStatus(this.value)">
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="pending">Pending Verification</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                            <button class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg" onclick="exportUsers()">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Users Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-semibold text-gray-900">Users List</h4>
+                            <span class="text-sm text-gray-600" id="usersCount">0 users found</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" class="rounded" id="selectAllUsers" onchange="toggleSelectAllUsers()">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="usersTable">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="px-6 py-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                Showing <span id="usersStart">0</span> to <span id="usersEnd">0</span> of <span id="usersTotal">0</span> users
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="btn bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded" id="prevUsersPage" onclick="previousUsersPage()">
+                                    Previous
+                                </button>
+                                <button class="btn bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded" id="nextUsersPage" onclick="nextUsersPage()">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="registry-section" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold mb-4">Registry Management</h3>
+                    <p class="text-gray-600">APAR and AISHE registry management features will be implemented here.</p>
+                </div>
+            </section>
+            
+            <section id="analytics-section" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold mb-4">Advanced Analytics</h3>
+                    <p class="text-gray-600">Detailed analytics and insights will be implemented here.</p>
+                </div>
+            </section>
+            
+            <section id="logs-section" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold mb-4">Verification Logs</h3>
+                    <p class="text-gray-600">Comprehensive verification audit logs will be displayed here.</p>
+                </div>
+            </section>
+            
+            <section id="reports-section" class="content-section hidden">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">System Reports & Analytics</h3>
+                    <p class="text-gray-600 mt-2">Generate comprehensive reports and export data for analysis</p>
+                </div>
+                
+                <!-- Report Generation Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- User Activity Report -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">User Activity Report</h4>
+                                <p class="text-sm text-gray-600">Registration and verification trends</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <select class="w-full border border-gray-300 rounded-lg px-3 py-2" id="userReportRange">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                                <option value="custom">Custom range</option>
+                            </select>
+                            <button class="w-full btn bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors" onclick="generateUserReport()">
+                                <i class="fas fa-chart-bar mr-2"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Verification Analysis -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-shield-check text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Verification Analysis</h4>
+                                <p class="text-sm text-gray-600">Success rates and patterns</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <select class="w-full border border-gray-300 rounded-lg px-3 py-2" id="verificationReportType">
+                                <option value="success_rates">Success Rates</option>
+                                <option value="failure_analysis">Failure Analysis</option>
+                                <option value="processing_times">Processing Times</option>
+                                <option value="manual_reviews">Manual Reviews</option>
+                            </select>
+                            <button class="w-full btn bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors" onclick="generateVerificationReport()">
+                                <i class="fas fa-analytics mr-2"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- System Performance -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-server text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">System Performance</h4>
+                                <p class="text-sm text-gray-600">API usage and health metrics</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <select class="w-full border border-gray-300 rounded-lg px-3 py-2" id="systemReportMetrics">
+                                <option value="api_usage">API Usage</option>
+                                <option value="response_times">Response Times</option>
+                                <option value="error_rates">Error Rates</option>
+                                <option value="uptime">System Uptime</option>
+                            </select>
+                            <button class="w-full btn bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors" onclick="generateSystemReport()">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Options -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Data Export -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h4 class="font-semibold text-gray-900 mb-4">Data Export</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Select Data Type</label>
+                                <select class="w-full border border-gray-300 rounded-lg px-3 py-2" id="exportDataType">
+                                    <option value="all_users">All Users</option>
+                                    <option value="verified_users">Verified Users Only</option>
+                                    <option value="pending_verifications">Pending Verifications</option>
+                                    <option value="verification_logs">Verification Logs</option>
+                                    <option value="system_analytics">System Analytics</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+                                <div class="flex space-x-3">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="exportFormat" value="csv" class="mr-2" checked>
+                                        <span class="text-sm">CSV</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="exportFormat" value="excel" class="mr-2">
+                                        <span class="text-sm">Excel</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="exportFormat" value="json" class="mr-2">
+                                        <span class="text-sm">JSON</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="w-full btn bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors" onclick="exportData()">
+                                <i class="fas fa-download mr-2"></i>Export Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Scheduled Reports -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h4 class="font-semibold text-gray-900 mb-4">Scheduled Reports</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                <select class="w-full border border-gray-300 rounded-lg px-3 py-2" id="scheduledReportType">
+                                    <option value="daily_summary">Daily Summary</option>
+                                    <option value="weekly_analytics">Weekly Analytics</option>
+                                    <option value="monthly_report">Monthly Report</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Recipients</label>
+                                <input type="email" placeholder="admin@eduverify.gov.in" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2" id="reportEmails">
+                            </div>
+                            <div class="flex space-x-3">
+                                <button class="flex-1 btn bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors" onclick="scheduleReport()">
+                                    <i class="fas fa-clock mr-2"></i>Schedule
+                                </button>
+                                <button class="flex-1 btn bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors" onclick="viewScheduledReports()">
+                                    <i class="fas fa-list mr-2"></i>View All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Generated Reports Display -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200" id="reportsDisplay" style="display: none;">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-semibold text-gray-900">Generated Report</h4>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="closeReportDisplay()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6" id="reportContent">
+                        <!-- Generated report content will be displayed here -->
+                    </div>
+                </div>
+            </section>
+            
+            <section id="settings-section" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold mb-4">System Settings</h3>
+                    <p class="text-gray-600">System configuration and settings will be available here.</p>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- User Management -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">User Management</h2>
-            <div class="space-y-4">
-                <input type="text" id="searchUser" placeholder="Search users..." 
-                       class="w-full px-3 py-2 border rounded">
-                <div id="usersList" class="max-h-96 overflow-y-auto">
-                    <!-- Users will be listed here -->
+    <!-- Verification Details Modal -->
+    <div id="verificationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-900">Verification Details</h3>
+                        <button onclick="closeModal('verificationModal')" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6" id="verificationModalContent">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+                <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closeModal('verificationModal')" class="btn bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                        Close
+                    </button>
+                    <button onclick="approveVerification()" class="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-check mr-2"></i>Approve
+                    </button>
+                    <button onclick="rejectVerification()" class="btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-times mr-2"></i>Reject
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Reports Section -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">System Reports</h2>
-            <div class="space-y-3">
-                <button onclick="generateReports()" 
-                        class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                    Generate Analytics Report
-                </button>
-                <button onclick="exportData()" 
-                        class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                    Export Data
-                </button>
-            </div>
-            <div id="reportsOutput" class="mt-4 p-4 bg-gray-50 rounded hidden">
-                <!-- Reports will be displayed here -->
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg p-6 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Processing...</p>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    let token = localStorage.getItem('token');
-    
-    if (!token) {
-        window.location.href = '/login';
-    }
+    <script src="{{ url_for('static', filename='js/admin-dashboard.js') }}"></script>
+</body>
+</html>
 
-    document.addEventListener('DOMContentLoaded', function() {
-        loadDashboardData();
-        loadUsers();
-    });
-
-    async function loadDashboardData() {
-        try {
-            const response = await fetch('/admin/reports', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (response.ok) {
-                document.getElementById('totalUsers').textContent = data.total_users;
-                document.getElementById('totalStudents').textContent = data.total_students;
-                document.getElementById('totalTeachers').textContent = data.total_teachers;
-                document.getElementById('totalInstitutions').textContent = data.total_institutions;
-            }
-        } catch (error) {
-            console.error('Error loading dashboard data:', error);
-        }
-    }
-
-    async function loadUsers() {
-        // In a real implementation, you'd have an endpoint to fetch all users
-        // For now, we'll use the reports data
-        try {
-            const response = await fetch('/admin/reports', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (response.ok) {
-                const usersList = document.getElementById('usersList');
-                // This is a simplified representation
-                usersList.innerHTML = `
-                    <div class="text-gray-600">
-                        <p>Total Users: ${data.total_users}</p>
-                        <p>Students: ${data.users_by_role.student}</p>
-                        <p>Teachers: ${data.users_by_role.teacher}</p>
-                        <p>Institutions: ${data.users_by_role.institution}</p>
-                        <p>Admins: ${data.users_by_role.admin}</p>
-                    </div>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading users:', error);
-        }
-    }
-
-    async function generateReports() {
-        try {
-            const response = await fetch('/admin/reports', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (response.ok) {
-                const reportsOutput = document.getElementById('reportsOutput');
-                reportsOutput.classList.remove('hidden');
-                reportsOutput.innerHTML = `
-                    <h4 class="font-bold mb-2">System Analytics Report</h4>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
-                `;
-            }
-        } catch (error) {
-            console.error('Error generating reports:', error);
-        }
-    }
-
-    function exportData() {
-        alert('Data export feature coming soon!');
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-    }
-</script>
-{% endblock %}

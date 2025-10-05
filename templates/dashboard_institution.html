@@ -3,193 +3,416 @@
 {% block title %}Institution Dashboard - Unified Education Interface{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Institution Info -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-blue-600 mb-4">Institution Profile</h2>
-            <div id="institutionInfo">
-                <p>Loading...</p>
-            </div>
-        </div>
-
-        <!-- NIRF Ranking -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-green-600 mb-4">NIRF Ranking</h2>
-            <div id="nirfInfo">
-                <p>Loading...</p>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-purple-600 mb-4">Quick Actions</h2>
-            <div class="space-y-3">
-                <button onclick="showDataUpload()" 
-                        class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                    Upload Data
-                </button>
-                <button onclick="loadAnalytics()" 
-                        class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                    View Analytics
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Analytics Section -->
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Institution Analytics</h2>
-        <div id="analyticsData">
-            <!-- Analytics will be loaded here -->
-        </div>
-    </div>
-</div>
-
-<!-- Data Upload Modal -->
-<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-lg w-96">
-        <h3 class="text-lg font-bold mb-4">Upload Institution Data</h3>
-        <form onsubmit="uploadData(event)" class="space-y-3">
-            <input type="number" id="nirfRank" placeholder="NIRF Rank" 
-                   class="w-full px-3 py-2 border rounded">
-            <textarea id="schemesData" placeholder="Schemes (JSON format)" 
-                      class="w-full px-3 py-2 border rounded"></textarea>
-            <div class="flex space-x-3">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Upload
-                </button>
-                <button type="button" onclick="hideDataUpload()" 
-                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    Cancel
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    let token = localStorage.getItem('token');
-    
-    if (!token) {
-        window.location.href = '/login';
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        loadInstitutionData();
-        loadAnalytics();
-    });
-
-    async function loadInstitutionData() {
-        try {
-            const [profileResponse, analyticsResponse] = await Promise.all([
-                fetch('/auth/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch('/institution/analytics', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
-
-            const profileData = await profileResponse.json();
-            const analyticsData = await analyticsResponse.json();
-
-            if (profileResponse.ok) {
-                document.getElementById('institutionInfo').innerHTML = `
-                    <p><strong>Name:</strong> ${profileData.institution_name}</p>
-                    <p><strong>AISHE Code:</strong> ${profileData.aishe_code}</p>
-                    <p><strong>Address:</strong> ${profileData.address}</p>
-                    <p><strong>Established:</strong> ${profileData.established_year}</p>
-                `;
-            }
-
-            if (analyticsResponse.ok) {
-                document.getElementById('nirfInfo').innerHTML = `
-                    <p><strong>Current Rank:</strong> ${analyticsData.nirf_rank || 'Not set'}</p>
-                    <p><strong>Total Students:</strong> ${analyticsData.total_students}</p>
-                    <p><strong>Total Teachers:</strong> ${analyticsData.total_teachers}</p>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading institution data:', error);
-        }
-    }
-
-    function showDataUpload() {
-        document.getElementById('uploadModal').classList.remove('hidden');
-    }
-
-    function hideDataUpload() {
-        document.getElementById('uploadModal').classList.add('hidden');
-    }
-
-    async function uploadData(event) {
-        event.preventDefault();
-        
-        const uploadData = {
-            nirf_rank: document.getElementById('nirfRank').value,
-            schemes: JSON.parse(document.getElementById('schemesData').value || '[]')
-        };
-
-        try {
-            const response = await fetch('/institution/upload_data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(uploadData)
-            });
-
-            if (response.ok) {
-                alert('Data uploaded successfully!');
-                hideDataUpload();
-                loadInstitutionData();
-            } else {
-                alert('Error uploading data');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async function loadAnalytics() {
-        try {
-            const response = await fetch('/institution/analytics', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (response.ok) {
-                document.getElementById('analyticsData').innerHTML = `
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-blue-100 p-4 rounded">
-                            <p class="font-bold">Total Students</p>
-                            <p class="text-2xl">${data.total_students}</p>
-                        </div>
-                        <div class="bg-green-100 p-4 rounded">
-                            <p class="font-bold">Total Teachers</p>
-                            <p class="text-2xl">${data.total_teachers}</p>
-                        </div>
-                        <div class="bg-purple-100 p-4 rounded">
-                            <p class="font-bold">NIRF Rank</p>
-                            <p class="text-2xl">${data.nirf_rank || 'N/A'}</p>
-                        </div>
-                        <div class="bg-orange-100 p-4 rounded">
-                            <p class="font-bold">Schemes</p>
-                            <p class="text-2xl">${data.schemes ? data.schemes.length : 0}</p>
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 id="pageTitle" class="text-2xl font-bold text-gray-900">Institution Dashboard</h1>
+                    <p class="text-sm text-gray-500">Comprehensive management and analytics for your institution</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="aisheStatus" class="flex items-center">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        <span class="text-sm text-gray-600">AISHE Verified</span>
+                    </div>
+                    <div id="complianceIndicator" class="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span class="text-sm text-gray-600">Compliant</span>
+                    <div class="flex items-center space-x-3">
+                        <div class="user-avatar w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-medium">I</div>
+                        <div class="user-info">
+                            <div class="font-weight-600 text-sm text-gray-900">Institution User</div>
+                            <div class="text-xs text-gray-500">admin@institution.edu</div>
                         </div>
                     </div>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading analytics:', error);
-        }
-    }
+                    <button onclick="logout()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-    }
-</script>
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white h-screen shadow-sm border-r border-gray-200">
+            <nav class="mt-6 px-3">
+                <div class="space-y-1">
+                    <a onclick="showSection('dashboard')" class="nav-item active group flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer bg-purple-50 text-purple-700">
+                        <i class="fas fa-home mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a onclick="showSection('students')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-users mr-3"></i>
+                        Students
+                        <span id="studentCount" class="ml-auto bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 text-xs">2,547</span>
+                    </a>
+                    <a onclick="showSection('teachers')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-chalkboard-teacher mr-3"></i>
+                        Faculty
+                        <span class="ml-auto bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 text-xs">156</span>
+                    </a>
+                    <a onclick="showSection('analytics')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Analytics
+                    </a>
+                    <a onclick="showSection('schemes')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-award mr-3"></i>
+                        Schemes
+                        <span id="schemesCount" class="ml-auto bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 text-xs">8 Active</span>
+                    </a>
+                    <a onclick="showSection('compliance')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-shield-check mr-3"></i>
+                        Compliance
+                    </a>
+                    <a onclick="showSection('profile')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-university mr-3"></i>
+                        Profile
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-hidden">
+            <div class="px-6 py-6">
+                <!-- Dashboard Overview Section -->
+                <div id="dashboard-section" class="content-section">
+                    <!-- Key Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-users text-blue-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Total Students</dt>
+                                            <dd id="totalStudents" class="text-2xl font-bold text-gray-900">2,547</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-chalkboard-teacher text-green-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Faculty</dt>
+                                            <dd id="totalTeachers" class="text-2xl font-bold text-gray-900">156</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-trophy text-orange-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">NIRF Rank</dt>
+                                            <dd id="nirfRank" class="text-2xl font-bold text-gray-900">#78</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-percentage text-purple-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Compliance</dt>
+                                            <dd id="complianceScore" class="text-2xl font-bold text-gray-900">94.2%</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-graduation-cap text-indigo-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Graduation Rate</dt>
+                                            <dd id="graduationRate" class="text-lg font-bold text-gray-900">87.5%</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-briefcase text-teal-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Placement Rate</dt>
+                                            <dd id="placementRate" class="text-lg font-bold text-gray-900">76.3%</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-book-open text-red-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Active Courses</dt>
+                                            <dd id="activeCourses" class="text-lg font-bold text-gray-900">42</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-flask text-pink-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Research Papers</dt>
+                                            <dd id="researchPublications" class="text-lg font-bold text-gray-900">234</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Activities -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Enrollment Trends -->
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Enrollment & Graduation Trends</h3>
+                            <div class="h-64">
+                                <canvas id="enrollmentChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activities -->
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Activities</h3>
+                            <div id="recentActivitiesList" class="space-y-3 max-h-64 overflow-y-auto">
+                                <!-- Activities will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <button onclick="showSection('students')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users mr-2"></i>
+                                Manage Students
+                            </button>
+                            <button onclick="showSection('teachers')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chalkboard-teacher mr-2"></i>
+                                Manage Faculty
+                            </button>
+                            <button onclick="showSection('schemes')" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-award mr-2"></i>
+                                View Schemes
+                            </button>
+                            <button onclick="generateInstitutionReport()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-bar mr-2"></i>
+                                Generate Report
+                            </button>
+                            <button onclick="showSection('compliance')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-check mr-2"></i>
+                                Compliance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students Section -->
+                <div id="students-section" class="content-section hidden">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-medium text-gray-900">Student Management</h3>
+                                <div class="flex space-x-3">
+                                    <div id="bulkStudentActions" class="hidden flex space-x-2">
+                                        <button onclick="exportStudentData()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                                            Export Selected
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" class="rounded">
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll/Batch</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CGPA</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable" class="bg-white divide-y divide-gray-200">
+                                    <!-- Students will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teachers Section -->
+                <div id="teachers-section" class="content-section hidden">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-medium text-gray-900">Faculty Management</h3>
+                                <div class="flex space-x-3">
+                                    <div id="bulkTeacherActions" class="hidden flex space-x-2">
+                                        <button onclick="exportTeacherData()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
+                                            Export Selected
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" class="rounded">
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faculty</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID/Qualification</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Courses</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APAR Status</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachersTable" class="bg-white divide-y divide-gray-200">
+                                    <!-- Teachers will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Section -->
+                <div id="analytics-section" class="content-section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Performance Radar</h3>
+                            <div class="h-64">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Compliance Status</h3>
+                            <div class="h-64">
+                                <canvas id="complianceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white shadow rounded-lg p-6 lg:col-span-2">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Scheme Applications</h3>
+                            <div class="h-64">
+                                <canvas id="schemesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schemes Section -->
+                <div id="schemes-section" class="content-section hidden">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">Government Schemes</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheme</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schemesTable" class="bg-white divide-y divide-gray-200">
+                                    <!-- Schemes will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profile-section" class="content-section hidden">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">Institution Profile</h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="institutionProfileDisplay">
+                                <!-- Profile data will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+        <span class="text-gray-700">Loading...</span>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Institution Dashboard JavaScript -->
+<script src="{{ url_for('static', filename='js/institution-dashboard.js') }}"></script>
 {% endblock %}

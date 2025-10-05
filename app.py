@@ -12,6 +12,7 @@ from models.student import Student
 from models.teacher import Teacher
 from models.institution import Institution
 from models.scheme import GovernmentScheme, SchemeApplication
+from models.verification import APARRegistry, AISHERegistry, VerificationLog, UserVerificationStatus
 
 def create_app(config_name='default'):
     app = Flask(__name__)

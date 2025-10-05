@@ -1,177 +1,493 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - EduVerify</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Header -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">EduVerify</h1>
+                    </div>
+                </div>
+                
+                <!-- User menu -->
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
+                            <div class="user-avatar bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
+                                S
+                            </div>
+                            <div class="user-info hidden md:block text-left">
+                                <p class="font-weight-600 text-sm">Student User</p>
+                                <p class="text-xs text-gray-500">student@example.com</p>
+                            </div>
+                        </button>
+                    </div>
+                    <button onclick="logout()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-{% block title %}Student Dashboard - Unified Education Interface{% endblock %}
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-sm">
+            <div class="p-6">
+                <nav class="space-y-2">
+                    <a href="#" onclick="showSection('dashboard')" class="nav-item active flex items-center px-4 py-2 text-sm font-medium text-gray-900 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-home mr-3 text-gray-400"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" onclick="showSection('profile')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-user mr-3 text-gray-400"></i>
+                        My Profile
+                        <span id="profileStatusBadge" class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Pending
+                        </span>
+                    </a>
+                    <a href="#" onclick="showSection('verification')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-shield-alt mr-3 text-gray-400"></i>
+                        Verification
+                        <span id="verificationBadge" class="ml-auto w-2 h-2 bg-red-400 rounded-full"></span>
+                    </a>
+                    <a href="#" onclick="showSection('academics')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-graduation-cap mr-3 text-gray-400"></i>
+                        Academic Records
+                    </a>
+                    <a href="#" onclick="showSection('scholarships')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-award mr-3 text-gray-400"></i>
+                        Scholarships
+                        <span id="scholarshipCount" class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            3 New
+                        </span>
+                    </a>
+                    <a href="#" onclick="showSection('progress')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-chart-line mr-3 text-gray-400"></i>
+                        Progress Tracking
+                    </a>
+                    <a href="#" onclick="showSection('documents')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-folder mr-3 text-gray-400"></i>
+                        Documents
+                    </a>
+                    <a href="#" onclick="showSection('support')" class="nav-item flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-headset mr-3 text-gray-400"></i>
+                        Support
+                    </a>
+                </nav>
+            </div>
+        </div>
 
-{% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Student Info Card -->
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold text-blue-600 mb-4">Student Information</h2>
-        <div id="studentInfo" class="space-y-2">
-            <p><span class="font-semibold">Loading...</span></p>
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <!-- Dashboard Overview Section -->
+            <div id="dashboard-section" class="content-section">
+                <div class="mb-8">
+                    <h1 id="pageTitle" class="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
+                    <p class="text-gray-600">Welcome back! Here's your academic overview.</p>
+                </div>
+
+                <!-- Quick Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-shield-check text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Verification Status</p>
+                                <p id="verificationStatusText" class="text-lg font-semibold text-gray-900">75% Complete</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-graduation-cap text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Academic Progress</p>
+                                <p id="academicProgress" class="text-lg font-semibold text-gray-900">8.5 CGPA</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-award text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Active Applications</p>
+                                <p id="activeApplications" class="text-lg font-semibold text-gray-900">3</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-certificate text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Certificates</p>
+                                <p id="certificateCount" class="text-lg font-semibold text-gray-900">5</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Academic Progress Chart -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Academic Progress</h3>
+                        <div class="h-64">
+                            <canvas id="academicProgressChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                        <div class="space-y-4">
+                            <button onclick="startVerification()" class="w-full flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-left transition-colors">
+                                <div class="flex items-center">
+                                    <i class="fas fa-id-card text-blue-600 mr-3"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Complete Verification</p>
+                                        <p class="text-sm text-gray-600">Verify your Aadhaar and documents</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button onclick="applyScholarship()" class="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition-colors">
+                                <div class="flex items-center">
+                                    <i class="fas fa-award text-green-600 mr-3"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Apply for Scholarships</p>
+                                        <p class="text-sm text-gray-600">3 new scholarships available</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button onclick="uploadDocuments()" class="w-full flex items-center justify-between p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-left transition-colors">
+                                <div class="flex items-center">
+                                    <i class="fas fa-upload text-yellow-600 mr-3"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Upload Documents</p>
+                                        <p class="text-sm text-gray-600">2 pending document uploads</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
+                    <div id="recentActivitiesList" class="space-y-3">
+                        <!-- Activities will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div id="profile-section" class="content-section hidden">
+                <div class="mb-8">
+                    <h1 class="text-2xl font-semibold text-gray-900">My Profile</h1>
+                    <p class="text-gray-600">Manage your personal information and settings.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Profile Information -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
+                            <form id="profileForm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                        <input type="text" id="fullName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="Rahul Sharma">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                        <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="rahul@example.com" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                        <input type="tel" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="+91 9876543210">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                        <input type="date" id="dob" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="2000-05-15">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                        <select id="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="male" selected>Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Aadhaar Number</label>
+                                        <input type="text" id="aadhaar" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="****-****-1234" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6">
+                                    <h4 class="text-md font-semibold text-gray-900 mb-4">Academic Information</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
+                                            <input type="text" id="institution" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="ABC University">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Course</label>
+                                            <input type="text" id="course" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="B.Tech Computer Science">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Year of Study</label>
+                                            <select id="yearOfStudy" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="1">1st Year</option>
+                                                <option value="2">2nd Year</option>
+                                                <option value="3" selected>3rd Year</option>
+                                                <option value="4">4th Year</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Roll Number</label>
+                                            <input type="text" id="rollNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="CS2021001">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 flex justify-end space-x-3">
+                                    <button type="button" onclick="resetProfile()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                                        Reset
+                                    </button>
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Profile Photo and Status -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Profile Photo</h3>
+                            <div class="text-center">
+                                <div class="w-24 h-24 mx-auto bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-user text-gray-400 text-3xl"></i>
+                                </div>
+                                <button onclick="uploadPhoto()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    Change Photo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Verification Status</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Aadhaar</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Verified
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Academic Records</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Pending
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Income Certificate</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        Required
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Section -->
+            <div id="verification-section" class="content-section hidden">
+                <div class="mb-8">
+                    <h1 class="text-2xl font-semibold text-gray-900">Document Verification</h1>
+                    <p class="text-gray-600">Complete your document verification to access all features.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Verification Progress -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Verification Progress</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-check text-green-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h4 class="text-sm font-medium text-gray-900">Aadhaar Verification</h4>
+                                    <p class="text-sm text-gray-500">Completed on 15/01/2024</p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Verified
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock text-yellow-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h4 class="text-sm font-medium text-gray-900">Academic Documents</h4>
+                                    <p class="text-sm text-gray-500">Under review</p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        In Review
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-exclamation text-red-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h4 class="text-sm font-medium text-gray-900">Income Certificate</h4>
+                                    <p class="text-sm text-gray-500">Required for scholarship eligibility</p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <button onclick="uploadIncomeDocument()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Upload -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Upload Documents</h3>
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                                <div class="space-y-2">
+                                    <i class="fas fa-upload text-gray-400 text-3xl"></i>
+                                    <p class="text-sm text-gray-600">
+                                        <button onclick="selectDocument()" class="text-blue-600 hover:text-blue-800 font-medium">
+                                            Click to upload
+                                        </button>
+                                        or drag and drop
+                                    </p>
+                                    <p class="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">Document Type</label>
+                                <select id="documentType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select document type</option>
+                                    <option value="income_certificate">Income Certificate</option>
+                                    <option value="caste_certificate">Caste Certificate</option>
+                                    <option value="marksheet">Marksheet/Transcript</option>
+                                    <option value="bonafide">Bonafide Certificate</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <button onclick="submitDocument()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                                Submit Document
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Uploaded Documents -->
+                <div class="mt-6 bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Uploaded Documents</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upload Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentsTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Documents will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other sections (academics, scholarships, etc.) will be added similarly -->
+            
         </div>
     </div>
 
-    <!-- Academic Progress -->
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold text-green-600 mb-4">Academic Progress</h2>
-        <div class="w-full bg-gray-200 rounded-full h-4">
-            <div id="progressBar" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div>
-        </div>
-        <p id="progressText" class="mt-2 text-sm text-gray-600">0% Complete</p>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold text-purple-600 mb-4">Quick Actions</h2>
-        <div class="space-y-3">
-            <button onclick="showProjectUpload()" 
-                    class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-                Upload Project
-            </button>
-            <button onclick="loadPerformance()" 
-                    class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition">
-                View Performance
-            </button>
-        </div>
-    </div>
-
-    <!-- Projects Section -->
-    <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">My Projects</h2>
-        <div id="projectsList" class="space-y-4">
-            <!-- Projects will be loaded here -->
-        </div>
-    </div>
-</div>
-
-<!-- Project Upload Modal -->
-<div id="projectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-lg w-96">
-        <h3 class="text-lg font-bold mb-4">Upload New Project</h3>
-        <form onsubmit="uploadProject(event)" class="space-y-3">
-            <input type="text" id="projectTitle" placeholder="Project Title" required 
-                   class="w-full px-3 py-2 border rounded">
-            <textarea id="projectDescription" placeholder="Description" 
-                      class="w-full px-3 py-2 border rounded"></textarea>
-            <input type="text" id="projectTech" placeholder="Technology Used" 
-                   class="w-full px-3 py-2 border rounded">
-            <input type="url" id="projectGithub" placeholder="GitHub Link" 
-                   class="w-full px-3 py-2 border rounded">
-            <div class="flex space-x-3">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Upload
-                </button>
-                <button type="button" onclick="hideProjectUpload()" 
-                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    Cancel
+    <!-- Modals -->
+    <div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Document Details</h3>
+                <button onclick="closeModal('documentModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        </form>
+            <div id="documentModalContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    let token = localStorage.getItem('token');
-    
-    if (!token) {
-        window.location.href = '/login';
-    }
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-4">
+            <div class="flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span>Loading...</span>
+            </div>
+        </div>
+    </div>
 
-    // Load student data on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        loadStudentData();
-        loadProjects();
-    });
-
-    async function loadStudentData() {
-        try {
-            const response = await fetch('/student/performance', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (response.ok) {
-                document.getElementById('progressBar').style.width = `${data.academic_progress}%`;
-                document.getElementById('progressText').textContent = `${data.academic_progress}% Complete`;
-            }
-        } catch (error) {
-            console.error('Error loading student data:', error);
-        }
-    }
-
-    function showProjectUpload() {
-        document.getElementById('projectModal').classList.remove('hidden');
-    }
-
-    function hideProjectUpload() {
-        document.getElementById('projectModal').classList.add('hidden');
-    }
-
-    async function uploadProject(event) {
-        event.preventDefault();
-        
-        const projectData = {
-            title: document.getElementById('projectTitle').value,
-            description: document.getElementById('projectDescription').value,
-            technology: document.getElementById('projectTech').value,
-            github_link: document.getElementById('projectGithub').value,
-            upload_date: new Date().toISOString()
-        };
-
-        try {
-            const response = await fetch('/student/upload_project', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(projectData)
-            });
-
-            if (response.ok) {
-                alert('Project uploaded successfully!');
-                hideProjectUpload();
-                loadProjects();
-            } else {
-                alert('Error uploading project');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async function loadProjects() {
-        try {
-            const response = await fetch('/student/performance', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (response.ok && data.projects) {
-                const projectsList = document.getElementById('projectsList');
-                projectsList.innerHTML = data.projects.map(project => `
-                    <div class="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50">
-                        <h4 class="font-semibold">${project.title}</h4>
-                        <p class="text-sm text-gray-600">${project.description}</p>
-                        <p class="text-xs text-gray-500">Tech: ${project.technology}</p>
-                        <a href="${project.github_link}" target="_blank" class="text-blue-500 text-xs">GitHub</a>
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading projects:', error);
-        }
-    }
-
-    async function loadPerformance() {
-        // Implementation for performance analytics
-        alert('Performance analytics feature coming soon!');
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-    }
-</script>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/student-dashboard.js') }}"></script>
+</body>
+</html>

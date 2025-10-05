@@ -3,182 +3,352 @@
 {% block title %}Teacher Dashboard - Unified Education Interface{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Teacher Info -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-blue-600 mb-4">Teacher Profile</h2>
-            <div id="teacherInfo">
-                <p>Loading...</p>
-            </div>
-        </div>
-
-        <!-- Evaluation Stats -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-green-600 mb-4">Evaluation Statistics</h2>
-            <div id="evaluationStats">
-                <p>Loading...</p>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-purple-600 mb-4">Quick Actions</h2>
-            <div class="space-y-3">
-                <button onclick="showEvaluationForm()" 
-                        class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                    Evaluate Student
-                </button>
-                <button onclick="loadPerformance()" 
-                        class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                    View Performance
-                </button>
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 id="pageTitle" class="text-2xl font-bold text-gray-900">Teacher Dashboard</h1>
+                    <p class="text-sm text-gray-500">Manage students, evaluations, and track performance</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="aparStatus" class="flex items-center">
+                        <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                        <span class="text-sm text-gray-600">APAR Pending</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="user-avatar w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">T</div>
+                        <div class="user-info">
+                            <div class="font-weight-600 text-sm text-gray-900">Teacher User</div>
+                            <div class="text-xs text-gray-500">teacher@edu.in</div>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Evaluations -->
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Evaluations</h2>
-        <div id="evaluationsList">
-            <!-- Evaluations will be loaded here -->
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white h-screen shadow-sm border-r border-gray-200">
+            <nav class="mt-6 px-3">
+                <div class="space-y-1">
+                    <a onclick="showSection('dashboard')" class="nav-item active group flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer bg-blue-50 text-blue-700">
+                        <i class="fas fa-home mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a onclick="showSection('students')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-users mr-3"></i>
+                        My Students
+                        <span id="studentCount" class="ml-auto bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 text-xs">0</span>
+                    </a>
+                    <a onclick="showSection('evaluations')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-clipboard-check mr-3"></i>
+                        Evaluations
+                    </a>
+                    <a onclick="showSection('analytics')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Analytics
+                    </a>
+                    <a onclick="showSection('profile')" class="nav-item group flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <i class="fas fa-user mr-3"></i>
+                        My Profile
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-hidden">
+            <div class="px-6 py-6">
+                <!-- Dashboard Overview Section -->
+                <div id="dashboard-section" class="content-section">
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-users text-blue-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Total Students</dt>
+                                            <dd id="totalStudents" class="text-2xl font-bold text-gray-900">125</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-clipboard-check text-green-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Evaluations</dt>
+                                            <dd id="evaluationsCompleted" class="text-2xl font-bold text-gray-900">89</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-chart-line text-purple-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Average Score</dt>
+                                            <dd id="averageScore" class="text-2xl font-bold text-gray-900">78.5%</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-percentage text-orange-500 text-2xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Completion Rate</dt>
+                                            <dd id="completionRate" class="text-2xl font-bold text-gray-900">92.3%</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Recent Activities -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Performance Chart -->
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Subject Performance</h3>
+                            <div class="h-64">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activities -->
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Activities</h3>
+                            <div id="recentActivitiesList" class="space-y-3">
+                                <!-- Activities will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <button onclick="showSection('students')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users mr-2"></i>
+                                Manage Students
+                            </button>
+                            <button onclick="evaluateStudent('')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clipboard-check mr-2"></i>
+                                New Evaluation
+                            </button>
+                            <button onclick="showSection('analytics')" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-bar mr-2"></i>
+                                View Analytics
+                            </button>
+                            <button onclick="exportStudentData()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-download mr-2"></i>
+                                Export Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students Management Section -->
+                <div id="students-section" class="content-section hidden">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-medium text-gray-900">Student Management</h3>
+                                <div class="flex space-x-3">
+                                    <div id="bulkActions" class="hidden flex space-x-2">
+                                        <button onclick="bulkEvaluate()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
+                                            Bulk Evaluate
+                                        </button>
+                                        <button onclick="sendBulkMessage()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                                            Send Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" class="rounded">
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll Number</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable" class="bg-white divide-y divide-gray-200">
+                                    <!-- Students will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Section -->
+                <div id="analytics-section" class="content-section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Student Progress Trend</h3>
+                            <div class="h-64">
+                                <canvas id="studentProgressChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white shadow rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Evaluation Status</h3>
+                            <div class="h-64">
+                                <canvas id="evaluationTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profile-section" class="content-section hidden">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">Teacher Profile</h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="teacherProfileDisplay" class="mb-6">
+                                <!-- Profile data will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Student Details Modal -->
+<div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-900">Student Details</h3>
+                <button onclick="closeModal('studentModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-6">
+            <div id="studentModalContent">
+                <!-- Content will be loaded here -->
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Evaluation Modal -->
-<div id="evaluationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-lg w-96">
-        <h3 class="text-lg font-bold mb-4">Evaluate Student</h3>
-        <form onsubmit="submitEvaluation(event)" class="space-y-3">
-            <input type="text" id="studentId" placeholder="Student ID" required 
-                   class="w-full px-3 py-2 border rounded">
-            <textarea id="evaluationNotes" placeholder="Evaluation Notes" required
-                      class="w-full px-3 py-2 border rounded"></textarea>
-            <input type="number" id="evaluationScore" placeholder="Score (0-100)" min="0" max="100"
-                   class="w-full px-3 py-2 border rounded">
-            <input type="number" id="progressUpdate" placeholder="Progress %" min="0" max="100"
-                   class="w-full px-3 py-2 border rounded">
-            <div class="flex space-x-3">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Submit
-                </button>
-                <button type="button" onclick="hideEvaluationForm()" 
-                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    Cancel
+<div id="evaluationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-900">Evaluate Student</h3>
+                <button onclick="closeModal('evaluationModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        </form>
+        </div>
+        <div class="p-6">
+            <form id="evaluationForm" class="space-y-4">
+                <input type="hidden" id="evalStudentId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <select id="evalSubject" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="">Select Subject</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="physics">Physics</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="biology">Biology</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Evaluation Type</label>
+                    <select id="evalType" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="">Select Type</option>
+                        <option value="quiz">Quiz</option>
+                        <option value="assignment">Assignment</option>
+                        <option value="exam">Exam</option>
+                        <option value="project">Project</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Score</label>
+                        <input type="number" id="evalScore" min="0" max="100" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Max Score</label>
+                        <input type="number" id="evalMaxScore" value="100" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="evalDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Feedback</label>
+                    <textarea id="evalFeedback" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Optional feedback for the student"></textarea>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                        Submit Evaluation
+                    </button>
+                    <button type="button" onclick="closeModal('evaluationModal')" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<script>
-    let token = localStorage.getItem('token');
-    
-    if (!token) {
-        window.location.href = '/login';
-    }
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span class="text-gray-700">Loading...</span>
+    </div>
+</div>
 
-    document.addEventListener('DOMContentLoaded', function() {
-        loadTeacherData();
-        loadEvaluations();
-    });
-
-    async function loadTeacherData() {
-        try {
-            const [profileResponse, performanceResponse] = await Promise.all([
-                fetch('/auth/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch('/teacher/performance', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
-
-            const profileData = await profileResponse.json();
-            const performanceData = await performanceResponse.json();
-
-            if (profileResponse.ok) {
-                document.getElementById('teacherInfo').innerHTML = `
-                    <p><strong>Name:</strong> ${profileData.name}</p>
-                    <p><strong>Subject:</strong> ${profileData.subject}</p>
-                    <p><strong>APAR ID:</strong> ${profileData.apar_id}</p>
-                    <p><strong>Department:</strong> ${profileData.department}</p>
-                `;
-            }
-
-            if (performanceResponse.ok) {
-                document.getElementById('evaluationStats').innerHTML = `
-                    <p><strong>Total Evaluations:</strong> ${performanceData.evaluations_count}</p>
-                    <p><strong>Subject:</strong> ${performanceData.subject}</p>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading teacher data:', error);
-        }
-    }
-
-    function showEvaluationForm() {
-        document.getElementById('evaluationModal').classList.remove('hidden');
-    }
-
-    function hideEvaluationForm() {
-        document.getElementById('evaluationModal').classList.add('hidden');
-    }
-
-    async function submitEvaluation(event) {
-        event.preventDefault();
-        
-        const evaluationData = {
-            student_id: document.getElementById('studentId').value,
-            evaluation: document.getElementById('evaluationNotes').value,
-            score: document.getElementById('evaluationScore').value,
-            progress: document.getElementById('progressUpdate').value,
-            date: new Date().toISOString(),
-            update_progress: true
-        };
-
-        try {
-            const response = await fetch('/teacher/evaluate_student', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(evaluationData)
-            });
-
-            if (response.ok) {
-                alert('Evaluation submitted successfully!');
-                hideEvaluationForm();
-                loadEvaluations();
-            } else {
-                alert('Error submitting evaluation');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async function loadEvaluations() {
-        try {
-            const response = await fetch('/teacher/performance', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            // Note: In a real implementation, you'd have a separate endpoint for evaluations
-            document.getElementById('evaluationsList').innerHTML = `
-                <p class="text-gray-600">Evaluation history will be displayed here.</p>
-            `;
-        } catch (error) {
-            console.error('Error loading evaluations:', error);
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-    }
-</script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Teacher Dashboard JavaScript -->
+<script src="{{ url_for('static', filename='js/teacher-dashboard.js') }}"></script>
 {% endblock %}
